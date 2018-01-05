@@ -4,16 +4,27 @@ from flask import Flask
 
 app = Flask(__name__)
 
-MAIL_RU_FEED = "https://news.mail.ru/rss"
+FEEDS = {'mail': "https://news.mail.ru/rss",
+         'ntv': "https://www.ntv.ru/exp/newsrss_top.jsp"}
 
 
 @app.route("/")
-def get_news():
-    feed = feedparser.parse(MAIL_RU_FEED)
+@app.route("/mail")
+def mail():
+    return get_news('mail')
+
+
+@app.route("/ntv")
+def ntv():
+    return get_news('ntv')
+
+
+def get_news(publication):
+    feed = feedparser.parse(FEEDS[publication])
     first_article = feed['entries'][0]
     return """<html>
         <body>
-            <h1> Новости Mail.ru </h1>
+            <h1> Новости </h1>
                 <b>{0}</b> <br/>
                 <i>{1}</i> <br/>
                 <p>{2}</p> <br/>
