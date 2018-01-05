@@ -9,17 +9,8 @@ FEEDS = {'mail': "https://news.mail.ru/rss",
 
 
 @app.route("/")
-@app.route("/mail")
-def mail():
-    return get_news('mail')
-
-
-@app.route("/ntv")
-def ntv():
-    return get_news('ntv')
-
-
-def get_news(publication):
+@app.route("/<publication>")
+def get_news(publication='mail'):
     feed = feedparser.parse(FEEDS[publication])
     first_article = feed['entries'][0]
     return """<html>
