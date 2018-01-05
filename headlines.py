@@ -6,19 +6,15 @@ from flask import render_template
 
 app = Flask(__name__)
 
-FEEDS = {'mail': "https://news.mail.ru/rss",
+FEEDS = {'bbc': 'http://feeds.bbci.co.uk/news/rss.xml',
          'ntv': "https://www.ntv.ru/exp/newsrss_top.jsp"}
 
 
 @app.route("/")
 @app.route("/<publication>")
-def get_news(publication='mail'):
+def get_news(publication='bbc'):
     feed = feedparser.parse(FEEDS[publication])
-    first_article = feed['entries'][0]
-    return render_template("home.html",
-                           title=first_article.get("title"),
-                           published=first_article.get("published"),
-                           summary=first_article.get("summary"))
+    return render_template("home.html", articles=feed['entries'])
 
 
 if __name__ == "__main__":
