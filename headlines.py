@@ -11,9 +11,9 @@ FEEDS = {'bbc': 'http://feeds.bbci.co.uk/news/rss.xml',
          'ntv': "https://www.ntv.ru/exp/newsrss_top.jsp"}
 
 
-@app.route("/")
+@app.route("/",methods=['GET','POST'])
 def get_news():
-    query = request.args.get("publication")
+    query = request.form.get("publication")
     if not query or query.lower() not in FEEDS:
         publication = 'bbc'
     else:
