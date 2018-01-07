@@ -10,8 +10,15 @@ from flask import request
 
 app = Flask(__name__)
 
+WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather?q={}" \
+            "&units=metric&appid=c3c13229692eb0f40b50aa542cd015eb"
+CURRENCY_URL = "https://openexchangerates.org//api/latest.json?" \
+             "app_id=0b18d5e3549d48e789bb678e4a814a3e"
+
 DEFAULTS = {'publication': "bbc",
-            'city': "London,UK"}
+            'city': "London,UK",
+            'currency_from': "RUB",
+            'currency_to': "GBP"}
 
 FEEDS = {'bbc': 'http://feeds.bbci.co.uk/news/rss.xml',
          'ntv': "https://www.ntv.ru/exp/newsrss_top.jsp"}
@@ -27,7 +34,16 @@ def home():
     if not city:
         city = DEFAULTS['city']
     weather = get_weather(city)
-    return render_template("home.html", articles=articles, weather=weather)
+    currency_from = request.args.get('currency_from')
+    if not currency_from:
+        currency_from = DEFAULTS['currency_from']
+    currency_to = request.args.get('currency_to')
+    if not currency_to:
+        currency_to = DEFAULTS['currency_to']
+    rate = get_rate(currency_from, currency_to)
+    return render_template("home.html", articles=articles, weather=weather,
+                           rate=rate, currency_from=currency_from,
+                           currency_to=currency_to)
 
 
 def get_news(query):
@@ -39,11 +55,17 @@ def get_news(query):
     return feed['entries']
 
 
+def get_rate(frm, to):
+    all_currency = urllib.request.urlopen(CURRENCY_URL).read().decode("utf-8")
+    parsed = json.loads(all_currency).get('rates')
+    frm_rate = parsed.get(frm.upper())
+    to_rate = parsed.get(to.upper())
+    return frm_rate/to_rate
+
+
 def get_weather(query):
-    api_url = "http://api.openweathermap.org/data/2.5/weather?q={}" \
-            "&units=metric&appid=c3c13229692eb0f40b50aa542cd015eb"
     query = urllib.parse.quote(query)
-    url = api_url.format(query)
+    url = WEATHER_URL.format(query)
     data = urllib.request.urlopen(url).read().decode("utf-8")
     parsed = json.loads(data)
     weather = None
